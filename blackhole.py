@@ -5,12 +5,11 @@ import configparser
 import argparse
 import requests
 import os
-import bencode
 import json
 import shutil
 import logging
-
-logger = logging.getLogger(__name__)
+from time import sleep
+logger = None
 
 # _agent = "ADBlackHole"
 _agent = "BlackHole"
@@ -29,20 +28,32 @@ payload = {}
 
 
 def getConfig():
-    global api, config, monitor_path, crawl_path, torrent_list
+    global api, config, monitor_path, crawl_path, torrent_list, logger 
+
+    logging.basicConfig()
+    logger = logging.getLogger(__name__)
+    logger.setLevel(logging.INFO)
+    logger.info("Started monitoring...")
+
     config = configparser.ConfigParser()
     config.read("config.ini")
     api = config['Config']['API']
     monitor_path = config['Config']['path']
     crawl_path = config['Config']['crawl_path']
 
-    # TODO add added folder
-
     if os.path.isfile("torrent_list.txt"):
         f = open('torrent_list.txt', 'r')
         torrent_list = list(map(lambda x: int(x), f.readlines()))
     payload['apikey'] = api
     payload['agent'] = _agent
+
+def createFolders():
+    if not os.path.isdir(monitor_path):
+        os.mkdir(monitor_path)
+    if not os.path.isdir(crawl_path):
+        os.mkdir(crawl_path)
+    if not os.path.isdir(crawl_path + '/added/'):
+        os.mkdir(crawl_path + '/added/')
 
 def testAPI():
     r = requests.get('http://api.alldebrid.com/v4/user', payload)
@@ -122,6 +133,18 @@ def parseMagnets(magnetList: list):
             f.writelines(generateCrawlJob(magnet))
             torrent_list.remove(magnet['id'])
             f.close()
+
+            # Delete from list
+            new_payload = payload.copy() 
+            new_payload['id'] = magnet['id']
+            r = requests.get("https://api.alldebrid.com/v4/magnet/delete", new_payload ) 
+
+            r.raise_for_status()
+            if r.json()['status'] == 'success': 
+                logger.info('Deleted %s '  % magnet['filename'])
+            else:
+                logger.warn('Could not delete %s from AllDebrid server. %s' % ( magnet['filename'], r.json() )  )
+            
     return count
 
 # Returns list str
@@ -145,11 +168,13 @@ def generateCrawlJob(magnet: dict):
 
 
 def start():
+    createFolders()
     getConfig()
     if not testAPI():
         raise Exception("API key seems to be wrong")
 
-    poll()
-
+    while True: 
+        poll()
+        sleep(60)
 
 start()
