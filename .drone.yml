@@ -1,0 +1,14 @@
+kind: pipeline
+type: docker
+name: default
+
+steps:
+- name: build
+  image: python:3.7.7-alpine3.10
+  commands:
+    - pip install -r requirements.txt
+    - python3 -m py_compile *.py
+
+trigger:
+  branch:
+  - master
