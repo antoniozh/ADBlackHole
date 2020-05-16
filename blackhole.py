@@ -88,8 +88,6 @@ def poll():
     # Extend torrent list by added torrents
         if len(toUpload) > 0:
             torrent_list.extend(map(lambda x: x['id'],  response['data']['files']))
-            with open('torrent_list.txt', 'w') as f:
-                f.writelines(map(lambda x : str(x) + "\n", torrent_list))
             for file in response['data']['files']:
                 filename = file['file']
                 if os.path.isfile(monitor_path + filename ):
