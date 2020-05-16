@@ -41,18 +41,14 @@ def getConfig():
     if os.path.isfile("torrent_list.txt"):
         f = open('torrent_list.txt', 'r')
         torrent_list = list(map(lambda x: int(x), f.readlines()))
-
     payload['apikey'] = api
     payload['agent'] = _agent
-
 
 def testAPI():
     r = requests.get('http://api.alldebrid.com/v4/user', payload)
     return r.json()['status'] == 'success'
 
-
 def poll():
-
     toUpload = {}
     i = 0
     for f in os.listdir(monitor_path):
