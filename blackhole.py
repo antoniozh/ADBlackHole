@@ -19,6 +19,8 @@ api = None
 config = None
 monitor_path = None
 crawl_path = None
+parser = None 
+args = None 
 
 torrent_list = []
 
@@ -36,10 +38,11 @@ def getConfig():
     logger.info("Started monitoring...")
 
     config = configparser.ConfigParser()
-    config.read("config.ini")
+    config.read(args.config)
     api = config['Config']['API']
     monitor_path = config['Config']['path']
-    crawl_path = config['Config']['crawl_path']
+    
+    crawl_path = args.crawl
 
     if os.path.isfile("torrent_list.txt"):
         f = open('torrent_list.txt', 'r')
@@ -166,15 +169,24 @@ def generateCrawlJob(magnet: dict):
 
     return map(lambda s: s + "\n", lines)
 
-
 def start():
-    createFolders()
     getConfig()
+    createFolders()
     if not testAPI():
         raise Exception("API key seems to be wrong")
-
     while True: 
         poll()
         sleep(60)
 
-start()
+def setupArgs():
+    global parser, args
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-c", "--config", help="Path of the config.ini file", default="config.ini")
+    parser.add_argument("-m", "--monitor", help="Path of the directory the script should monitor", default="./torrents/")
+    parser.add_argument("-C", "--crawl", help="Path of the directory the crawljobs will be written into", default="./crawl/")
+    parser.add_argument("--api", help="API Token for alldebrid")
+    args = parser.parse_args()
+
+    start()
+
+setupArgs()
