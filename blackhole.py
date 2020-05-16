@@ -61,6 +61,7 @@ def poll():
     i = 0
     for f in os.listdir(monitor_path):
         # TODO: Get active torrents and add as many as allowed
+        # open items
         if f.endswith(".torrent") and i < _MAX_TORRENT_COUNT:
             # https://2.python-requests.org/en/master/user/quickstart/#more-complicated-post-requests
             # If you want, you can send strings to be received as files:
@@ -72,9 +73,12 @@ def poll():
     
 
     r = requests.post('https://api.alldebrid.com/v4/magnet/upload/file', params=payload, files=toUpload)
+
+    # Close items 
+    for toClose in toUpload.values():
+        toClose[1].close()
+
     response = r.json()
-    
-    
 
     r.raise_for_status()
     # Logging 
@@ -109,8 +113,9 @@ def parseMagnets( magnetList : list ):
         elif code == 4:
             # Create crawljob for jdownloader
             # https://github.com/cooolinho/jdownloader-folderwatch/blob/master/crawljob-examples/download-archive.crawljob 
-            f = open( "%s/%s.crawljob" ( crawl_path ,  str(magnet['id'] ), 'w'))
+            f = open( "%s/%s.crawljob" % ( crawl_path ,  str(magnet['id']) ), 'w')
             f.writelines(generateCrawlJob(magnet))
+            f.close()
 
     return count
 
@@ -119,7 +124,7 @@ def generateCrawlJob(magnet : dict):
     lines = [
         "packageName=%s" % magnet['filename'],
         # dirty af 
-        "text=%s" % str(magnet['links']),
+        "text=%s" % str(list(map(lambda x: x['link'], magnet['links']))),
         # jDownloader settings
         "enabled=true",
         "autoStart=TRUE",
