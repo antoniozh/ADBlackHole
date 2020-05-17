@@ -216,7 +216,7 @@ def setupArgs():
     global parser, args
     parser = argparse.ArgumentParser()
     parser.add_argument("-c", "--config", help="Path of the config.ini file", default="config.ini")
-    parser.add_argument("-m", "--monitor", help="Path of the directory the script should monitor", default="./torrents/")
+    parser.add_argument("-m", "--monitor", help="Path of the directory the script should monitor")
     parser.add_argument("-C", "--crawl", help="Path of the directory the crawljobs will be written into")
     parser.add_argument("--api", help="API Token for alldebrid")
     parser.add_argument("-p", "--path-download", help="Path of the download directory the crawljobs should point to" )
