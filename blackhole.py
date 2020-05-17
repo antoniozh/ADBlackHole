@@ -200,9 +200,9 @@ def parseMagnets(magnetList: list):
 
             r.raise_for_status()
             if r.json()['status'] == 'success': 
-                logger.info('Deleted %s '  % magnet['filename'])
+                logger.info('Deleted torrent: %s from AllDebrid tasks'  % magnet['filename'])
             else:
-                logger.warn('Could not delete %s from AllDebrid server. %s' % ( magnet['filename'], r.json() )  )
+                logger.warn('Could not delete torrent: %s from AllDebrid server. %s' % ( magnet['filename'], r.json() )  )
             
     return count
 
