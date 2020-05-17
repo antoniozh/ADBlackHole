@@ -141,6 +141,7 @@ def parseMagnets(magnetList: list):
             f.writelines(generateCrawlJob(magnet))
             torrent_list.remove(magnet['id'])
             f.close()
+            logger.info('Wrote %s.crawljob to %s' % ( str(magnet['id'], crawl_path )  ))
 
             # Delete from list
             new_payload = payload.copy() 
@@ -172,6 +173,9 @@ def generateCrawlJob(magnet: dict):
         "extractAfterDownload=TRUE"
     ]
 
+    if parser.path_download != None:
+        lines.append("downloadFolder=%s" % parser.path_download)
+    
     return map(lambda s: s + "\n", lines)
 
 def start():
@@ -190,6 +194,7 @@ def setupArgs():
     parser.add_argument("-m", "--monitor", help="Path of the directory the script should monitor", default="./torrents/")
     parser.add_argument("-C", "--crawl", help="Path of the directory the crawljobs will be written into", default="./crawl/")
     parser.add_argument("--api", help="API Token for alldebrid")
+    parser.add_argument("-p", "--path-download", help="Path of the download directory the crawljobs should point to" )
     args = parser.parse_args()
 
     start()
