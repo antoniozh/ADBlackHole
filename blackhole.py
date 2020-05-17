@@ -141,7 +141,7 @@ def parseMagnets(magnetList: list):
             f.writelines(generateCrawlJob(magnet))
             torrent_list.remove(magnet['id'])
             f.close()
-            logger.info('Wrote %s.crawljob to %s' % ( str(magnet['id'], crawl_path )  ))
+            logger.info('Wrote %s.crawljob to %s' % ( str(magnet['id']), crawl_path )  )
 
             # Delete from list
             new_payload = payload.copy() 
