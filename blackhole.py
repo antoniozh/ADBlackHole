@@ -60,7 +60,7 @@ def createFolders():
         os.mkdir(crawl_path + '/added/')
 
 def testAPI():
-    r = requests.get('user', payload)
+    r = requests.get(api_url + 'user', payload)
     return r.json()['status'] == 'success'
 
 def poll():
@@ -112,7 +112,7 @@ def poll():
                         pass
 
     # Get count
-    r = requests.get('api_url' + 'magnet/status', payload)
+    r = requests.get(api_url + 'magnet/status', payload)
     r.raise_for_status()
     response = r.json()
 
@@ -146,7 +146,7 @@ def parseMagnets(magnetList: list):
             # Delete from list
             new_payload = payload.copy() 
             new_payload['id'] = magnet['id']
-            r = requests.get('api_url' + "magnet/delete", new_payload ) 
+            r = requests.get(api_url + "magnet/delete", new_payload ) 
 
             r.raise_for_status()
             if r.json()['status'] == 'success': 
@@ -175,7 +175,7 @@ def generateCrawlJob(magnet: dict):
 
     if parser.path_download != None:
         lines.append("downloadFolder=%s" % parser.path_download)
-    
+
     return map(lambda s: s + "\n", lines)
 
 def start():
