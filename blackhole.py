@@ -86,7 +86,11 @@ def poll():
     toUpload = {}
     # TODO: upload magnet links too 
     magnetLinks = {}
+    magnetFiles = {}
+
     i = 0
+    j = 0
+
     for f in os.listdir(monitor_path):
         # TODO: Get active torrents and add as many as allowed
         # open items
@@ -101,22 +105,21 @@ def poll():
             logger.info("Added torrent: %s to AllDebrid server" % ( f ))
             i += 1
 
-    r = requests.post(
-        api_url + 'magnet/upload/file', params=payload, files=toUpload)
+        if f.endswith(".magnet") and i < _MAX_TORRENT_COUNT:
+            magnetLinks['magnets[%d]' % j] = open(monitor_path + f, 'r').read()
+            j += 1
 
-    # Close items
-    for toClose in toUpload.values():
-        toClose[1].close()
-
-    response = r.json()
-
-    r.raise_for_status()
-    # Logging
-    # open('dump_python.json', 'w').write(json.dumps(response, indent=4))
-
-    if response['status'] == 'success':
-        # Extend torrent list by added torrents
-        if len(toUpload) > 0:
+    if ( len(toUpload) > 0 ):
+        postResponse = requests.get(
+            api_url + 'magnet/upload/file', params=payload, files=toUpload)
+        # Close items
+        for toClose in toUpload.values():
+            toClose[1].close()
+        postResponse.raise_for_status()
+    
+        response = postResponse.json()
+        if response['status'] == 'success' :
+            # Extend torrent list by added torrents
             torrent_list.extend(
                 map(lambda x: x['id'],  response['data']['files']))
             for file in response['data']['files']:
@@ -126,10 +129,38 @@ def poll():
                         shutil.move(monitor_path + filename,
                                     monitor_path + "added/" + filename)
                     except PermissionError as e:
-                        # TODO: Logger
                         logger.error(e)
                         pass
+               
+    if ( len(magnetLinks) > 0 ):
 
+        new_payload = payload.copy()
+        new_payload.update(magnetLinks)
+
+        getResponse = requests.get(
+            api_url + 'magnet/upload', params=new_payload)
+            # 'https://postman-echo.com/post', params=payload, files=magnetLinks)
+
+        # Close items
+        getResponse.raise_for_status()
+        response = getResponse.json()
+
+        # Extend torrent_list
+        torrent_list.extend(
+                    map(lambda x: x['id'],  response['data']['magnets']))
+
+        for file in magnetFiles:
+            if os.path.isfile(monitor_path + file):
+                try:
+                    shutil.move(monitor_path + file,
+                                monitor_path + "added/" + file)
+                except PermissionError as e:
+                    logger.error(e)
+                    pass
+
+    # Move magnet files to added folder 
+    # Move .torrent files to added folder
+    
     # Get count
     r = requests.get(api_url + 'magnet/status', payload)
     r.raise_for_status()
