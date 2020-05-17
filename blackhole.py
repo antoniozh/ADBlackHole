@@ -28,6 +28,7 @@ payload = {}
 
 # Read API key from config.ini
 
+api_url = 'http://api.alldebrid.com/v4/'
 
 def getConfig():
     global api, config, monitor_path, crawl_path, torrent_list, logger 
@@ -59,11 +60,13 @@ def createFolders():
         os.mkdir(crawl_path + '/added/')
 
 def testAPI():
-    r = requests.get('http://api.alldebrid.com/v4/user', payload)
+    r = requests.get('user', payload)
     return r.json()['status'] == 'success'
 
 def poll():
     toUpload = {}
+    # TODO: upload magnet links too 
+    magnetLinks = {}
     i = 0
     for f in os.listdir(monitor_path):
         # TODO: Get active torrents and add as many as allowed
@@ -75,10 +78,12 @@ def poll():
             # Apparently it's important to upload as an array with index
             toUpload['files[%d]' % i] = (
                 f,  open(monitor_path + f, 'rb'), 'application/x-bittorrent')
+
+            logger.info("Added torrent: %s to AllDebrid server" % ( f ))
             i += 1
 
     r = requests.post(
-        'https://api.alldebrid.com/v4/magnet/upload/file', params=payload, files=toUpload)
+        api_url + 'magnet/upload/file', params=payload, files=toUpload)
 
     # Close items
     for toClose in toUpload.values():
@@ -107,7 +112,7 @@ def poll():
                         pass
 
     # Get count
-    r = requests.get('https://api.alldebrid.com/v4/magnet/status', payload)
+    r = requests.get('api_url' + 'magnet/status', payload)
     r.raise_for_status()
     response = r.json()
 
@@ -140,7 +145,7 @@ def parseMagnets(magnetList: list):
             # Delete from list
             new_payload = payload.copy() 
             new_payload['id'] = magnet['id']
-            r = requests.get("https://api.alldebrid.com/v4/magnet/delete", new_payload ) 
+            r = requests.get('api_url' + "magnet/delete", new_payload ) 
 
             r.raise_for_status()
             if r.json()['status'] == 'success': 
