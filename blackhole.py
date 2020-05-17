@@ -11,7 +11,7 @@ import logging
 from time import sleep
 logger = None
 
-# _agent = "ADBlackHole"
+
 _agent = "BlackHole"
 _MAX_TORRENT_COUNT = 5
 
@@ -23,10 +23,7 @@ parser = None
 args = None 
 
 torrent_list = []
-
 payload = {}
-
-# Read API key from config.ini
 
 api_url = 'http://api.alldebrid.com/v4/'
 
@@ -40,16 +37,32 @@ def getConfig():
 
     config = configparser.ConfigParser()
     config.read(args.config)
-    api = config['Config']['API']
 
-    # TODO: Set up configurable and argument based passing
-    monitor_path = config['Config']['path']
-    
+    # TODO cleanup this part 
+    if args.api != None:
+        api = args.api
+    elif 'api'in config['Config'].keys() : 
+        api = config['Config']['API']
+    else: 
+        raise AttributeError("No API key.")
+
+    if args.monitor != None:
+        monitor_path = args.monitor
+    elif 'path'in config['Config'].keys() : 
+        monitor_path = config['Config']['path']
+    else: 
+        # Default monitoring path
+        monitor_path = "./torrents/"
+
     if args.crawl != None:
         crawl_path = args.crawl
-    else: 
+    elif "crawl_path" in config['Config'].keys() : 
         crawl_path = config['Config']['crawl_path']
+    else: 
+        # Default crawling path
+        crawl_path = "./crawl/"
 
+    logger.info("Monitoring torrents under: %s ; Output crawljob directory: %s " % ( monitor_path, crawl_path ) )
 
     if os.path.isfile("torrent_list.txt"):
         f = open('torrent_list.txt', 'r')
@@ -181,6 +194,8 @@ def generateCrawlJob(magnet: dict):
 
     if args.path_download != None:
         lines.append("downloadFolder=%s/<jd:packagename>" % args.path_download)
+    elif "path_download" in config['Config'].keys():
+        lines.append("downloadFolder=%s/<jd:packagename>" % config['Config']['path_download'] )
 
     return map(lambda s: s + "\n", lines)
 
@@ -196,8 +211,6 @@ def start():
 
         except Exception as e:
             logger.error(exc_info=True)
-
-
 
 def setupArgs():
     global parser, args
