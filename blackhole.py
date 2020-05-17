@@ -86,7 +86,7 @@ def poll():
     toUpload = {}
     # TODO: upload magnet links too 
     magnetLinks = {}
-    magnetFiles = {}
+    magnetFiles = []
 
     i = 0
     j = 0
@@ -107,6 +107,8 @@ def poll():
 
         if f.endswith(".magnet") and i < _MAX_TORRENT_COUNT:
             magnetLinks['magnets[%d]' % j] = open(monitor_path + f, 'r').read()
+            logger.info("Added torrent: %s to AllDebrid server" % ( f ))
+            magnetFiles.append(f)
             j += 1
 
     if ( len(toUpload) > 0 ):
