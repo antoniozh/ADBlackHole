@@ -173,8 +173,8 @@ def generateCrawlJob(magnet: dict):
         "extractAfterDownload=TRUE"
     ]
 
-    if parser.path_download != None:
-        lines.append("downloadFolder=%s" % parser.path_download)
+    if args.path_download != None:
+        lines.append("downloadFolder=%s" % args.path_download)
 
     return map(lambda s: s + "\n", lines)
 
