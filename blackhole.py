@@ -185,7 +185,13 @@ def start():
         raise Exception("API key seems to be wrong")
     while True: 
         poll()
-        sleep(60)
+        try: 
+            sleep(60)
+
+        except Exception as e:
+            logger.error(exc_info=True)
+
+
 
 def setupArgs():
     global parser, args
