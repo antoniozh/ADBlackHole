@@ -41,9 +41,15 @@ def getConfig():
     config = configparser.ConfigParser()
     config.read(args.config)
     api = config['Config']['API']
+
+    # TODO: Set up configurable and argument based passing
     monitor_path = config['Config']['path']
     
-    crawl_path = args.crawl
+    if args.crawl != None:
+        crawl_path = args.crawl
+    else: 
+        crawl_path = config['Config']['crawl_path']
+
 
     if os.path.isfile("torrent_list.txt"):
         f = open('torrent_list.txt', 'r')
@@ -174,7 +180,7 @@ def generateCrawlJob(magnet: dict):
     ]
 
     if args.path_download != None:
-        lines.append("downloadFolder=%s" % args.path_download)
+        lines.append("downloadFolder=%s/<jd:packagename>" % args.path_download)
 
     return map(lambda s: s + "\n", lines)
 
@@ -198,7 +204,7 @@ def setupArgs():
     parser = argparse.ArgumentParser()
     parser.add_argument("-c", "--config", help="Path of the config.ini file", default="config.ini")
     parser.add_argument("-m", "--monitor", help="Path of the directory the script should monitor", default="./torrents/")
-    parser.add_argument("-C", "--crawl", help="Path of the directory the crawljobs will be written into", default="./crawl/")
+    parser.add_argument("-C", "--crawl", help="Path of the directory the crawljobs will be written into")
     parser.add_argument("--api", help="API Token for alldebrid")
     parser.add_argument("-p", "--path-download", help="Path of the download directory the crawljobs should point to" )
     args = parser.parse_args()
