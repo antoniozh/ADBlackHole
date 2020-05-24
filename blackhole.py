@@ -112,7 +112,7 @@ def poll():
             j += 1
 
     if ( len(toUpload) > 0 ):
-        postResponse = requests.get(
+        postResponse = requests.post(
             api_url + 'magnet/upload/file', params=payload, files=toUpload)
         # Close items
         for toClose in toUpload.values():
@@ -238,12 +238,11 @@ def start():
     if not testAPI():
         raise Exception("API key seems to be wrong")
     while True: 
-        sleep(60)
         try: 
             poll()
         except Exception as e:
             logger.error(exc_info=True)
-            pass 
+        sleep(300)
 
 def setupArgs():
     global parser, args
