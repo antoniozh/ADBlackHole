@@ -238,12 +238,12 @@ def start():
     if not testAPI():
         raise Exception("API key seems to be wrong")
     while True: 
-        poll()
+        sleep(60)
         try: 
-            sleep(60)
-
+            poll()
         except Exception as e:
             logger.error(exc_info=True)
+            pass 
 
 def setupArgs():
     global parser, args
