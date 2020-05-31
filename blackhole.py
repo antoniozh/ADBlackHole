@@ -241,7 +241,7 @@ def start():
         try: 
             poll()
         except Exception as e:
-            logger.error(exc_info=True)
+            logger.error(repr(e))
         sleep(300)
 
 def setupArgs():
